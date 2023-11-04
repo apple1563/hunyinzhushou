@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>混音助手</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description"
+          content="混音助手，混响时间计算，delay时间计算，压缩释放时间计算，predelay时间计算，测算音频BPM">
+    <meta name="keywords" content="混音助手，混响时间计算，delay时间计算，压缩释放时间计算，predelay时间计算，测算音频BPM">
+    <link rel="icon" href="./favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-/mhDoLbDldZc3qpsJHpLogda//BVZbgYuw6kof4u2FrCedxOtgRZDTHgHUhOCVim"
+            crossorigin="anonymous"></script>
+    <style>
+        body {
+            background-image: url("./bg.jpeg");
+        }
+    </style>
+</head>
+<body>
+<div id="wrapper">
+    <div class="container  border border-2 shadow p-4 bg-light" style="max-width: 900px;">
+        <div class="text-center">
+            <img src="./avatar.jpg" class="img-thumbnail rounded-circle" style="width: 150px;"
+                 alt="混音助手，混响时间计算，delay时间计算，压缩释放时间计算，predelay时间计算，测算音频BPM"/>
+        </div>
+        <div class="input-group mt-4 mb-3">
+            <input id="inputBPM" type="number" class="form-control" placeholder="请输入BPM">
+            <button class="btn btn-outline-secondary" type="button" id="button-addon">&nbsp;计&nbsp;算&nbsp;</button>
+        </div>
+        <div class="card text-bg-success mb-3">
+            <div class="card-header">
+                <div class="d-flex justify-content-between">
+                    <span>压缩 Compress</span>
+                    <span>注：慎选>800, <50的值 </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">释放时间(ms)：<span id="compressValue"></span></p>
+            </div>
+        </div>
+        <div class="card text-bg-warning mb-3">
+            <div class="card-header">混响 Reverb</div>
+            <div class="card-body">
+                <p class="card-text">建议预延迟时间(ms)：<span
+                        id="verbPredelayValue"></span></p>
+                <p class="card-text">建议混响时间(ms)：<span
+                        id="verbTimeValue"></span></p>
+            </div>
+        </div>
+        <div class="card text-bg-dark mb-3">
+            <div class="card-header">
+                <div class="d-flex justify-content-between">
+                    <span>延迟 Delay</span>
+                    <span>延时时间（单位：ms）</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    节拍-时间(ms)：<span
+                        id="delayValue"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    if (window.screen.width > 800) {
+        document.getElementById("wrapper").classList.add('d-flex', 'justify-content-center', 'align-items-center', 'vh-100');
+    }
+    document.getElementById("button-addon").addEventListener("click", () => {
+        const bpm = Number(document.getElementById("inputBPM").value);
+        document.getElementById("compressValue").innerText = caclCompress(bpm);
+        document.getElementById("verbPredelayValue").innerText = calcVerbPredelay(bpm);
+        document.getElementById("verbTimeValue").innerText = calcVerbTime(bpm);
+        document.getElementById("delayValue").innerText = calcDelay(bpm);
+    });
+
+    function caclCompress(value) {
+        let first = 60 / value * 1000;
+        // let first = value
+        for (; first > 1000; first = first / 2) {
+        }
+
+        if (first <= 1000) {
+            let tmp = first;
+            for (; tmp <= 1000;) {
+                tmp *= 2;
+            }
+            first = tmp / 2;
+        }
+
+        let i = 0;
+        let res = [];
+        for (; first >= 30 && first <= 1000 || i < 6; first = first / 2, i++) {
+            res.push(first);
+        }
+        return res.join('，');
+    }
+
+    function calcVerbPredelay(value) {
+        let first = 60 / value * 1000;
+        // let first = value
+        for (; first > 100; first = first / 2) {
+        }
+
+        if (first <= 100) {
+            let tmp = first;
+            for (; tmp <= 100;) {
+                tmp *= 2;
+            }
+            first = tmp / 2;
+        }
+
+        let res = [];
+        for (; first >= 10 && first <= 100; first = first / 2) {
+            res.push(first);
+        }
+        return `房间(${joinValues(res, 10, 30)})，大堂(${joinValues(res, 30, 100)})，板式(${joinValues(res, 10, 100)})`;
+    }
+
+    function calcVerbTime(value) {
+        let first = 60 / value * 1000;
+        // let first = value
+        for (; first > 4000; first = first / 2) {
+        }
+
+        if (first <= 4000) {
+            let tmp = first;
+            for (; tmp <= 4000;) {
+                tmp *= 2;
+            }
+            first = tmp / 2;
+        }
+
+        let res = [];
+        for (; first >= 300 && first <= 4000; first = first / 2) {
+            res.push(first);
+        }
+        return `房间(${joinValues(res, 300, 1000)})，大堂(${joinValues(res, 1500, 4000)})，板式(建议取前面数值的任意倍数)`;
+    }
+
+    function calcDelay(value) {
+        let res = [];
+        res.push(60 / value * 1000 * 2);
+        res.push(60 / value * 1000);
+        res.push(60 / value * 1000 / 2);
+        res.push(60 / value * 1000 / 2 / 2);
+        res.push(60 / value * 1000 / 2 / 2 / 2);
+        res.push(60 / value * 1000 / 2 / 2 / 2 / 2);
+        return res.map((item, index) => `1/${Math.pow(2, index + 1)}-${item}`).join("，");
+    }
+
+    function joinValues(res, begin, end) {
+        let tmp = [];
+        for (let i = 0; i < res.length; i++) {
+            if (res[i] <= end && res[i] >= begin) {
+                tmp.push(res[i]);
+            }
+        }
+        if (tmp.length === 0) {
+            tmp.push('*');
+        }
+
+        return tmp.join("，");
+    }
+</script>
+</body>
+</html>
