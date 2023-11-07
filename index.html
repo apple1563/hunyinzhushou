@@ -9,13 +9,13 @@
     <meta name="description"
           content="混音助手，混响时间计算，delay时间计算，压缩释放时间计算，predelay时间计算，测算音频BPM">
     <meta name="keywords" content="混音助手，混响时间计算，delay时间计算，压缩释放时间计算，predelay时间计算，测算音频BPM">
+    <link rel="manifest" href="./manifest.json"/>
     <link rel="icon" href="./favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-/mhDoLbDldZc3qpsJHpLogda//BVZbgYuw6kof4u2FrCedxOtgRZDTHgHUhOCVim"
+          crossorigin="anonymous">
+    <script async src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
             crossorigin="anonymous"></script>
-    <script src="./detect-bpm.js"></script>
+    <script async src="./detect-bpm.js"></script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-HNJVWCDF58"></script>
     <script>
@@ -40,7 +40,7 @@
 <body>
 <div id="wrapper">
     <h1 class="d-none">上传音频测算BPM</h1>
-    <div class="container  border border-2 shadow p-4 bg-light" style="max-width: 900px;">
+    <div class="position-relative container  border border-2 shadow p-4 bg-light" style="max-width: 900px;">
         <div class="text-center">
             <img src="./avatar.jpg" class="img-thumbnail rounded-circle" style="width: 150px;"
                  alt="混音助手，混响时间计算，delay时间计算，压缩释放时间计算，predelay时间计算，测算音频BPM"/>
@@ -64,7 +64,7 @@
             <div class="card-header">
                 <div class="d-flex justify-content-between">
                     <span>压缩 Compress</span>
-                    <span>注：慎选>800, <50的值 </span>
+                    <span>慎选>800, <50的值 </span>
                 </div>
             </div>
             <div class="card-body">
@@ -94,10 +94,21 @@
                 </p>
             </div>
         </div>
+        <div id="install-button" style="font-size: 12px;aspect-ratio: 1;right: 1.5rem;margin-top: 1rem;"
+             class="btn px-2 py-2 text-light  text-center bg-primary rounded-circle position-absolute top-50 translate-middle-y flex-column justify-content-center">
+            <div>下载</div>
+            <div id="app"></div>
+            <i id="closeInstallBtn"
+               class="btn-close text-info position-absolute end-0 top-0 rounded-circle bg-body-secondary"
+               style="width: 6px;height: 6px;"></i>
+        </div>
     </div>
 </div>
 <script>
-    if (window.screen.width > 800) {
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        document.getElementById("app").innerHTML = "&nbsp;&nbsp;APP&nbsp;&nbsp;";
+    } else {
+        document.getElementById("app").innerText = "桌面版";
         document.getElementById("wrapper").classList.add('d-flex', 'justify-content-center', 'align-items-center', 'vh-100');
     }
     document.getElementById("bpmTip").addEventListener("click", (e) => {
@@ -222,6 +233,48 @@
 
         return tmp.join("，");
     }
+</script>
+<script>
+    const installButton = document.getElementById('install-button');
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js', {scope: '/'});
+    } else {
+        installButton.style.display = 'none';
+    }
+    let promptEvent;
+    window.addEventListener('beforeinstallprompt', (event) => {
+        console.log("beforeinstallprompt");
+        event.preventDefault();
+        promptEvent = event;
+        installButton.style.display = 'block';
+        const clickFunc = () => {
+            promptEvent.prompt();
+            promptEvent.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('用户安装了 PWA。');
+                    installButton.style.display = 'none';
+                }
+            });
+        };
+        installButton.addEventListener('click', clickFunc);
+        // installButton.addEventListener('touchend', clickFunc);
+    });
+    window.addEventListener('appinstalled', () => {
+        installButton.style.display = 'none';
+    });
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        installButton.style.display = 'none';
+        // 当前在 PWA 环境中
+        console.log('当前在 PWA 环境中');
+    } else {
+        // 当前在浏览器中
+        console.log('当前在浏览器环境中');
+    }
+    document.getElementById("closeInstallBtn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        installButton.style.display = 'none';
+    });
 </script>
 </body>
 </html>

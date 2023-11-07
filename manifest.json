@@ -1,0 +1,14 @@
+{
+  "name": "混音助手",
+  "short_name": "混音助手",
+  "description": "混音助手，混响时间计算，delay时间计算，压缩释放时间计算，predelay时间计算，测算音频BPM",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/avatar.jpg",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
