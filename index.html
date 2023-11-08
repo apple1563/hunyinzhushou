@@ -44,6 +44,7 @@
         <div class="text-center">
             <img src="./avatar.jpg" class="img-thumbnail rounded-circle" style="width: 150px;"
                  alt="混音助手，混响时间计算，delay时间计算，压缩释放时间计算，predelay时间计算，测算音频BPM"/>
+            <div>wxfk.one</div>
         </div>
         <div class="input-group mt-4 mb-3">
             <!--            <label class="input-group-text">结果</label>-->
@@ -94,18 +95,25 @@
                 </p>
             </div>
         </div>
-        <div id="install-button" style="font-size: 12px;aspect-ratio: 1;right: 1.5rem;margin-top: 1rem;"
+        <div id="install-wrapper" style="font-size: 12px;aspect-ratio: 1;right: 1.5rem;margin-top: 1rem;"
              class="btn px-2 py-2 text-light  text-center bg-primary rounded-circle position-absolute top-50 translate-middle-y flex-column justify-content-center">
-            <div>下载</div>
-            <div id="app"></div>
+            <a id="install-button">
+                <div>下载</div>
+                <div id="app"></div>
+            </a>
             <i id="closeInstallBtn"
                class="btn-close text-info position-absolute end-0 top-0 rounded-circle bg-body-secondary"
                style="width: 6px;height: 6px;"></i>
         </div>
     </div>
 </div>
+<!--<footer class="blockquote-footer text-light text-center">版权所有@copyright：<a class="text-success" href="https://wxfk.one">https://wxfk.one</a></footer>-->
 <script>
-    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    function isMoblie() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    if (isMoblie()) {
         document.getElementById("app").innerHTML = "&nbsp;&nbsp;APP&nbsp;&nbsp;";
     } else {
         document.getElementById("app").innerText = "桌面版";
@@ -236,23 +244,34 @@
 </script>
 <script>
     const installButton = document.getElementById('install-button');
+    const installWrapper = document.getElementById('install-wrapper');
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js', {scope: '/'});
-    } else {
-        installButton.style.display = 'none';
     }
     let promptEvent;
     window.addEventListener('beforeinstallprompt', (event) => {
         console.log("beforeinstallprompt");
         event.preventDefault();
         promptEvent = event;
-        installButton.style.display = 'block';
+        if (isMoblie()) {
+            if (/iPhone|iPad/i.test(navigator.userAgent)) {
+                // 用户使用 iOS 设备，不支持pwa
+                installWrapper.style.display = "none";
+            } else {
+                installWrapper.style.display = 'block';
+                installWrapper.href = "./混音助手.apk";
+            }
+            return;
+        } else {
+            installWrapper.style.display = 'block';
+        }
+
         const clickFunc = () => {
             promptEvent.prompt();
             promptEvent.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
                     console.log('用户安装了 PWA。');
-                    installButton.style.display = 'none';
+                    installWrapper.style.display = 'none';
                 }
             });
         };
@@ -260,10 +279,10 @@
         // installButton.addEventListener('touchend', clickFunc);
     });
     window.addEventListener('appinstalled', () => {
-        installButton.style.display = 'none';
+        installWrapper.style.display = 'none';
     });
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-        installButton.style.display = 'none';
+        installWrapper.style.display = 'none';
         // 当前在 PWA 环境中
         console.log('当前在 PWA 环境中');
     } else {
@@ -273,7 +292,7 @@
     document.getElementById("closeInstallBtn").addEventListener("click", (e) => {
         e.stopPropagation();
         e.stopImmediatePropagation();
-        installButton.style.display = 'none';
+        installWrapper.style.display = 'none';
     });
 </script>
 </body>
